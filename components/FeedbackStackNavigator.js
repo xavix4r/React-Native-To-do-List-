@@ -8,6 +8,7 @@ import {
   TouchableWithoutFeedback,
   Modal,
   TouchableHighlight,
+  Animated,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 
@@ -15,6 +16,8 @@ function Input(props) {
   const [name, setName] = React.useState(null);
   const [message, setMessage] = React.useState(null);
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [yTranslate] = React.useState(new Animated.Value(0));
+
 
   const handleReset = () => {
     setName("");
@@ -22,12 +25,24 @@ function Input(props) {
   };
 
   useEffect(() => {
-    if (modalVisible) {
-      setTimeout(() => {
-        setModalVisible(false);
-      }, 10000);
+    if (!modalVisible) {
+      yTranslate.setValue(0);
     }
   }, [modalVisible]);
+
+
+  useEffect(() => {
+    if (modalVisible) {
+      setTimeout(() => {
+        Animated.timing(yTranslate, {
+          toValue: 600,
+          duration: 2500,
+          useNativeDriver: true,
+        }).start(() => setModalVisible(false));
+      }, 750);
+    }
+  }, [modalVisible]);
+
 
   return (
     <View style={styles.inputContainer}>
@@ -35,7 +50,7 @@ function Input(props) {
         style={styles.inputName}
         onChangeText={(text) => setName(text)}
         value={name}
-        placeholder="Name (optional)"
+        placeholder="Name"
       />
 
       <TextInput
@@ -48,7 +63,9 @@ function Input(props) {
 
       <Modal animationType="fade" transparent={true} visible={modalVisible}>
         <View style={styles.modalContainer}>
-          <View style={styles.modalView}>
+          <Animated.View
+            style={[styles.modalView, { transform: [{ translateY: yTranslate }] }]}
+          >
             <Text style={styles.modalText}>
               {"Feedback successfully submitted!"}
             </Text>
@@ -60,7 +77,7 @@ function Input(props) {
             >
               <Text style={styles.closeButtonText}>Close</Text>
             </TouchableHighlight>
-          </View>
+          </Animated.View>
         </View>
       </Modal>
 
@@ -71,7 +88,18 @@ function Input(props) {
         <View style={styles.buttonSpace} />
         <TouchableOpacity
           style={styles.submitButton}
-          onPress={() => setModalVisible(true)}
+          onPress={() => {
+            if ((message === "" || message === null) && (name === "" || name === null)) {
+              alert("Please input your name & feedback before submitting. Thank you!");
+            } else if ( message === "" || message === null) {
+              alert("Please input your feedback before submitting. Thank you!");
+            } else if ( name === "" || name === null ) {
+              alert("Please input your name before submitting. Thank you!");
+            } else {
+              setModalVisible(true);
+              handleReset(true);
+            }
+          }}
         >
           <Text style={styles.submitButtonText}>SUBMIT</Text>
         </TouchableOpacity>

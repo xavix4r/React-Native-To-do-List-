@@ -377,6 +377,7 @@ const styles = StyleSheet.create({
 
   secondButton: {
     marginLeft: 10,
+    
   },
 
   tasktext: {
